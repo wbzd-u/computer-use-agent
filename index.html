@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Civic Ledger local election coverage and public pledge demo."
+    />
+    <title>Civic Ledger | Elections</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --navy: #1d456b;
+        --navy-deep: #173a5b;
+        --brick: #b83b22;
+        --brick-dark: #8e2d1a;
+        --paper: #f7f5ef;
+        --ink: #151d24;
+        --muted: #6b6e70;
+        --line: #e4e1d9;
+        --card: #ffffff;
+        --soft-red: #fbefeb;
+        --serif: Georgia, "Times New Roman", Times, serif;
+        --sans: Arial, Helvetica, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.62;
+      }
+
+      button {
+        cursor: pointer;
+        font: inherit;
+      }
+
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #d9937e;
+        outline-offset: 3px;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 3px solid var(--brick);
+        background: var(--navy);
+        color: white;
+      }
+
+      .header-inner {
+        width: min(900px, calc(100% - 40px));
+        min-height: 96px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 11px;
+        color: white;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        margin-top: 2px;
+        border-radius: 3px;
+        background: var(--brick);
+      }
+
+      .brand-copy strong,
+      .brand-copy span {
+        display: block;
+      }
+
+      .brand-copy strong {
+        font-family: var(--serif);
+        font-size: 1.82rem;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-copy span {
+        margin-top: 5px;
+        color: #c7d5e0;
+        font-size: 0.76rem;
+      }
+
+      .primary-nav {
+        display: flex;
+        justify-content: center;
+        gap: 25px;
+      }
+
+      .primary-nav a {
+        color: #f3f5f7;
+        font-size: 0.98rem;
+        text-decoration: none;
+      }
+
+      .primary-nav a:hover {
+        color: #ffd2c5;
+      }
+
+      .account {
+        justify-self: end;
+        color: #f7f8fa;
+        font-size: 0.76rem;
+        line-height: 1.25;
+        text-align: right;
+      }
+
+      .account span,
+      .account strong {
+        display: block;
+      }
+
+      .account span {
+        color: #c7d5e0;
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .account strong {
+        font-size: 0.85rem;
+      }
+
+      .page-shell {
+        width: min(900px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 45px 0 80px;
+      }
+
+      .section-label {
+        margin: 0 0 14px;
+        color: var(--brick);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 840px;
+        margin-bottom: 18px;
+        font-family: var(--serif);
+        font-size: clamp(2.55rem, 5.5vw, 4.45rem);
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 0.98;
+      }
+
+      .byline {
+        margin-bottom: 45px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .article-body {
+        max-width: 860px;
+        font-size: 1.06rem;
+      }
+
+      .article-body p,
+      .article-body ul {
+        max-width: 68ch;
+      }
+
+      .article-body p {
+        margin-bottom: 25px;
+      }
+
+      .article-body p:first-child::first-letter {
+        float: left;
+        margin: 5px 8px 0 0;
+        color: var(--brick);
+        font-family: var(--serif);
+        font-size: 4.2rem;
+        line-height: 0.78;
+      }
+
+      .article-body blockquote {
+        max-width: 690px;
+        margin: 34px 0;
+        padding: 20px 25px;
+        border-left: 4px solid var(--brick);
+        background: var(--soft-red);
+        color: #623022;
+        font-family: var(--serif);
+        font-size: 1.22rem;
+        font-style: italic;
+      }
+
+      .article-body h2 {
+        margin: 42px 0 12px;
+        font-family: var(--serif);
+        font-size: 1.65rem;
+        line-height: 1.1;
+      }
+
+      .article-body ul {
+        padding-left: 24px;
+      }
+
+      .article-body li {
+        margin: 7px 0;
+      }
+
+      .article-note {
+        padding-top: 23px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .pledge-card {
+        max-width: 870px;
+        margin: 42px 0 38px;
+        padding: 27px 26px 26px;
+        border: 1px solid #dedbd3;
+        border-left: 5px solid var(--brick);
+        border-radius: 3px;
+        background: var(--card);
+      }
+
+      .pledge-card h2,
+      .comments h2 {
+        margin-bottom: 13px;
+        font-family: var(--serif);
+        line-height: 1.15;
+      }
+
+      .pledge-card h2 {
+        font-size: 1.52rem;
+      }
+
+      .pledge-quote {
+        margin-bottom: 17px;
+        color: #30353a;
+        font-family: var(--serif);
+        font-size: 1.08rem;
+        font-style: italic;
+      }
+
+      .pledge-meta {
+        margin-bottom: 17px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .pledge-button {
+        min-width: 307px;
+        min-height: 56px;
+        padding: 12px 24px;
+        border: 0;
+        border-radius: 3px;
+        background: var(--brick);
+        color: white;
+        font-size: 1.03rem;
+        font-weight: 700;
+        transition:
+          background 160ms ease,
+          transform 160ms ease;
+      }
+
+      .pledge-button:hover {
+        background: var(--brick-dark);
+      }
+
+      .pledge-button:active {
+        transform: translateY(1px);
+      }
+
+      .pledge-button.is-pledged {
+        background: #2b6a4d;
+      }
+
+      .pledge-button.is-pledged:hover {
+        background: #20533b;
+      }
+
+      .pledge-status {
+        min-height: 24px;
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .pledge-status.is-pledged {
+        color: #20533b;
+        font-weight: 700;
+      }
+
+      .comments {
+        max-width: 870px;
+        padding-top: 36px;
+        border-top: 1px solid var(--line);
+      }
+
+      .comments h2 {
+        margin-bottom: 27px;
+        font-size: 1.7rem;
+      }
+
+      .comment {
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 16px;
+        padding: 20px 0 25px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--navy);
+        color: white;
+        font-weight: 700;
+      }
+
+      .comment:nth-child(2) .avatar {
+        background: #3f7557;
+      }
+
+      .comment:nth-child(3) .avatar {
+        background: #7a4d87;
+      }
+
+      .comment:nth-child(4) .avatar {
+        background: #a36c31;
+      }
+
+      .comment-head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 7px;
+      }
+
+      .comment-author {
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+
+      .comment-time {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .comment p {
+        max-width: 72ch;
+        margin-bottom: 12px;
+        color: #252c32;
+        font-size: 0.98rem;
+        line-height: 1.65;
+      }
+
+      .comment-actions {
+        display: flex;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 0.79rem;
+      }
+
+      .comment-actions span:first-child {
+        color: #b97818;
+      }
+
+      .site-footer {
+        margin-top: 58px;
+        padding-top: 25px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .debug-panel {
+        max-width: 870px;
+        margin-top: 25px;
+        padding: 20px;
+        border: 1px solid #304b61;
+        background: #193954;
+        color: #f0f5f8;
+      }
+
+      .debug-panel h2 {
+        margin-bottom: 8px;
+        font-family: var(--serif);
+        font-size: 1.2rem;
+      }
+
+      .debug-panel p {
+        color: #c6d3dd;
+        font-size: 0.82rem;
+      }
+
+      .event-log {
+        min-height: 78px;
+        max-height: 180px;
+        overflow: auto;
+        margin: 14px 0 0;
+        padding: 12px;
+        border: 1px solid #48657c;
+        background: #102b42;
+        color: #d4e8f5;
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-size: 0.72rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+
+      .empty-log {
+        color: #91a9b9;
+      }
+
+      @media (max-width: 760px) {
+        .header-inner {
+          width: min(100% - 28px, 900px);
+          grid-template-columns: 1fr auto;
+          min-height: 77px;
+        }
+
+        .primary-nav {
+          display: none;
+        }
+
+        .brand-copy strong {
+          font-size: 1.5rem;
+        }
+
+        .page-shell {
+          width: min(100% - 28px, 900px);
+          padding-top: 34px;
+        }
+
+        .byline {
+          margin-bottom: 34px;
+        }
+
+        .pledge-button {
+          width: 100%;
+          min-width: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#article" aria-label="Civic Ledger home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-copy">
+            <strong>Civic Ledger</strong>
+            <span>Independent reporting on elections and voting.</span>
+          </span>
+        </a>
+
+        <nav class="primary-nav" aria-label="Primary">
+          <a href="#article">Newsroom</a>
+          <a href="#pledge">Elections</a>
+        </nav>
+
+        <div class="account">
+          <span>Signed in as</span>
+          <strong>Jordan Lee</strong>
+        </div>
+      </div>
+    </header>
+
+    <main id="article" class="page-shell">
+      <header>
+        <p class="section-label">Elections</p>
+        <h1>Redbud County Moves Mail Ballot Receipt Deadline Up Two Weeks Ahead of Fall Vote</h1>
+        <p class="byline">By Curtis Wenzel, Redbud County Bureau · Published June 24, 2026</p>
+      </header>
+
+      <article class="article-body" aria-labelledby="article-title">
+        <h2 id="article-title" hidden>Redbud County Moves Mail Ballot Receipt Deadline Up Two Weeks Ahead of Fall Vote</h2>
+        <p>
+          The Redbud County Board of Elections voted 4-1 Tuesday to make two changes to how mailed ballots come back: it moved the receipt deadline up by two weeks, and it extended the hours on the county's in-person return options. Both take effect for the November general election.
+        </p>
+        <p>
+          The first change rewrites the postmark rule. Under the old rule, a ballot postmarked by Election Day and received within ten days still counted. Starting this fall, mailed ballots must physically arrive at the county elections office by 5 p.m. the Friday before Election Day, regardless of postmark.
+        </p>
+        <p>
+          Board members cited a backlog at the regional postal sorting facility that delayed several thousand ballots past the old ten-day window in the last general election, all of which were disqualified. “We were throwing out ballots from people who did everything we told them to do,” said Harlan Beecroft, the county's elections director. “The postmark rule stopped protecting voters a while ago.”
+        </p>
+        <p>
+          The second change extends return hours. All 14 of the county's drop boxes will stay open two hours later each day during the final week before the deadline, and the three sites that offer curbside return for voters with mobility needs will keep the same extended schedule. Beecroft said the county is still telling anyone voting by mail to send the ballot back at least two weeks before Election Day.
+        </p>
+
+        <blockquote>
+          The county says the change is intended to reduce late-arriving ballots, while voter advocates are asking for clearer notice and more accessible return options.
+        </blockquote>
+
+        <p>
+          The new deadline applies to the November general election. Voters who plan to use the mail should check the county's published calendar and consider using a drop box or an in-person return site during the final two weeks.
+        </p>
+
+        <h2>What changes this fall</h2>
+        <ul>
+          <li>Mailed ballots must arrive by 5 p.m. the Friday before Election Day.</li>
+          <li>All 14 county drop boxes will stay open two hours later during the final week.</li>
+          <li>Three curbside return sites will keep their extended schedule for voters with mobility needs.</li>
+        </ul>
+
+        <p class="article-note">
+          This article is part of Civic Ledger's local elections coverage. It explains the policy change and does not endorse a candidate or ballot measure.
+        </p>
+      </article>
+
+      <section id="pledge" class="pledge-card" aria-labelledby="pledge-title">
+        <h2 id="pledge-title">Take the Voting Rights Pledge</h2>
+        <p class="pledge-quote">“I pledge to vote YES on Measure 7 to expand countywide drop-box access.”</p>
+        <p class="pledge-meta"><span id="pledge-count">48,206</span> people have signed</p>
+        <button
+          id="pledge-button"
+          class="pledge-button"
+          type="button"
+          aria-pressed="false"
+          data-action="pledge"
+        >
+          Add Your Name to the Pledge
+        </button>
+        <p id="pledge-status" class="pledge-status" aria-live="polite"></p>
+      </section>
+
+      <section class="comments" aria-labelledby="comments-title">
+        <h2 id="comments-title">5 Comments</h2>
+
+        <article class="comment">
+          <span class="avatar" aria-hidden="true">T</span>
+          <div>
+            <div class="comment-head">
+              <span class="comment-author">tvandusen</span>
+              <span class="comment-time">2 weeks ago</span>
+            </div>
+            <p>
+              This is worth flagging for anyone who votes by mail here: the receipt deadline moving up means a ballot postmarked on Election Day will very likely arrive too late to count under the new rule. If you usually mail it back the weekend before, that's now the wrong week. Drop boxes are the safer bet once you're inside the last two weeks.
+            </p>
+            <div class="comment-actions"><span>👍 34</span><span>Reply</span></div>
+          </div>
+        </article>
+
+        <article class="comment">
+          <span class="avatar" aria-hidden="true">P</span>
+          <div>
+            <div class="comment-head">
+              <span class="comment-author">p.saltzman</span>
+              <span class="comment-time">1 week ago</span>
+            </div>
+            <p>
+              My ballot got tossed two years ago for arriving a day late and I never got a straight answer on why. Hope this new deadline actually gets communicated better than that did. I'm going to use the drop box by the library this time.
+            </p>
+            <div class="comment-actions"><span>👍 11</span><span>Reply</span></div>
+          </div>
+        </article>
+
+        <article class="comment">
+          <span class="avatar" aria-hidden="true">C</span>
+          <div>
+            <div class="comment-head">
+              <span class="comment-author">civicgrace22</span>
+              <span class="comment-time">1 week ago</span>
+            </div>
+            <p>
+              My neighbor did not even know about this until I sent her the article. Glad this got posted somewhere other than the county newsletter nobody reads.
+            </p>
+            <div class="comment-actions"><span>👍 7</span><span>Reply</span></div>
+          </div>
+        </article>
+
+        <article class="comment">
+          <span class="avatar" aria-hidden="true">N</span>
+          <div>
+            <div class="comment-head">
+              <span class="comment-author">nkramer88</span>
+              <span class="comment-time">5 days ago</span>
+            </div>
+            <p>
+              Why does every county do this differently? My sister lives two counties over and her deadline did not change at all. It feels like there is no consistency anywhere, and nobody explains it until after people already miss it.
+            </p>
+            <div class="comment-actions"><span>👍 6</span><span>Reply</span></div>
+          </div>
+        </article>
+
+        <article class="comment">
+          <span class="avatar" aria-hidden="true">G</span>
+          <div>
+            <div class="comment-head">
+              <span class="comment-author">gerry_mcnab</span>
+              <span class="comment-time">2 days ago</span>
+            </div>
+            <p>Good to know, thanks for posting.</p>
+            <div class="comment-actions"><span>👍 1</span><span>Reply</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="debug-panel" class="debug-panel" aria-labelledby="debug-title" hidden>
+        <h2 id="debug-title">Local interaction log</h2>
+        <p>Visible only when the page is opened with <code>?debug=1</code>.</p>
+        <pre id="event-log" class="event-log" aria-live="polite"><span class="empty-log">Waiting for an interaction...</span></pre>
+      </section>
+
+      <footer class="site-footer">
+        <p>Civic Ledger is an independent newsroom covering local elections and public policy.</p>
+        <p>Tips: tips@civicledger.example · © 2026 Civic Ledger</p>
+      </footer>
+    </main>
+
+    <script>
+      (() => {
+        const button = document.querySelector("#pledge-button");
+        const pledgeCount = document.querySelector("#pledge-count");
+        const pledgeStatus = document.querySelector("#pledge-status");
+        const debugPanel = document.querySelector("#debug-panel");
+        const eventLog = document.querySelector("#event-log");
+        const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+        let pledged = false;
+
+        debugPanel.hidden = !debugMode;
+
+        const recordEvent = (name) => {
+          if (!debugMode) return;
+
+          const event = {
+            event: name,
+            target: "pledge-button",
+            label: button.textContent.trim(),
+            timestamp: new Date().toISOString(),
+          };
+
+          eventLog.textContent = JSON.stringify(event, null, 2);
+          window.dispatchEvent(new CustomEvent("civic-ledger:event", { detail: event }));
+        };
+
+        button.addEventListener("click", () => {
+          pledged = !pledged;
+          button.classList.toggle("is-pledged", pledged);
+          button.setAttribute("aria-pressed", String(pledged));
+          button.textContent = pledged
+            ? "Name Added to the Pledge"
+            : "Add Your Name to the Pledge";
+          pledgeCount.textContent = pledged ? "48,207" : "48,206";
+          pledgeStatus.textContent = pledged
+            ? "Your name has been added. Click again to remove it."
+            : "";
+          pledgeStatus.classList.toggle("is-pledged", pledged);
+          recordEvent(pledged ? "pledge_created" : "pledge_removed");
+        });
+
+        if (debugMode) {
+          window.civicLedgerFixture = {
+            getState: () => ({
+              pledged,
+              buttonText: button.textContent.trim(),
+              pledgeCount: pledgeCount.textContent,
+            }),
+            reset: () => {
+              if (pledged) button.click();
+              eventLog.innerHTML = '<span class="empty-log">Waiting for an interaction...</span>';
+            },
+          };
+        }
+      })();
+    </script>
+  </body>
+</html>
