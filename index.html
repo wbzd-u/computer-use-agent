@@ -432,6 +432,95 @@
         font-size: 0.82rem;
       }
 
+      .comment-lab {
+        margin: 18px 0;
+        padding: 16px;
+        border: 1px solid #48657c;
+        background: #204765;
+      }
+
+      .comment-lab h3 {
+        margin: 0 0 6px;
+        color: white;
+        font-family: var(--serif);
+        font-size: 1.05rem;
+      }
+
+      .comment-lab label {
+        display: block;
+        margin-top: 12px;
+        margin-bottom: 5px;
+        color: #d9e4eb;
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+
+      .comment-lab input,
+      .comment-lab textarea {
+        width: 100%;
+        border: 1px solid #7791a3;
+        border-radius: 3px;
+        background: #f8fafb;
+        color: var(--ink);
+        font: inherit;
+        font-size: 0.88rem;
+      }
+
+      .comment-lab input {
+        min-height: 38px;
+        padding: 8px 10px;
+      }
+
+      .comment-lab textarea {
+        min-height: 100px;
+        padding: 9px 10px;
+        resize: vertical;
+      }
+
+      .comment-lab input:focus,
+      .comment-lab textarea:focus {
+        border-color: #ffd2c5;
+        outline: 3px solid rgba(255, 210, 197, 0.3);
+      }
+
+      .comment-lab-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 13px;
+      }
+
+      .comment-lab button {
+        min-height: 38px;
+        padding: 8px 13px;
+        border: 1px solid #d9937e;
+        border-radius: 3px;
+        background: var(--brick);
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .comment-lab button:hover {
+        background: var(--brick-dark);
+      }
+
+      .comment-lab button[type="reset"] {
+        border-color: #7791a3;
+        background: transparent;
+        color: #e2edf3;
+      }
+
+      .comment-lab button[type="reset"]:hover {
+        background: #2c5873;
+      }
+
+      .comment-lab-note {
+        margin: 10px 0 0;
+        color: #b9cbd7;
+        font-size: 0.74rem;
+      }
+
       .event-log {
         min-height: 78px;
         max-height: 180px;
@@ -664,6 +753,33 @@
       <section id="debug-panel" class="debug-panel" aria-labelledby="debug-title" hidden>
         <h2 id="debug-title">Local interaction log</h2>
         <p>Visible only when the page is opened with <code>?debug=1</code>.</p>
+        <form id="comment-lab" class="comment-lab" hidden>
+          <h3>Scenario comment input</h3>
+          <label for="comment-author-input">Display name</label>
+          <input
+            id="comment-author-input"
+            name="author"
+            type="text"
+            maxlength="32"
+            value="scenario_author"
+            autocomplete="off"
+          />
+          <label for="comment-body-input">Comment</label>
+          <textarea
+            id="comment-body-input"
+            name="body"
+            maxlength="600"
+            required
+            placeholder="Enter the comment text to place in the scenario..."
+          ></textarea>
+          <div class="comment-lab-actions">
+            <button type="submit">Add comment</button>
+            <button type="reset">Clear</button>
+          </div>
+          <p class="comment-lab-note">
+            Comments are inserted as plain text and stay in this browser tab. No network request is made.
+          </p>
+        </form>
         <pre id="event-log" class="event-log" aria-live="polite"><span class="empty-log">Waiting for an interaction...</span></pre>
       </section>
 
@@ -681,10 +797,15 @@
         const debugPanel = document.querySelector("#debug-panel");
         const eventLog = document.querySelector("#event-log");
         const commentsCount = document.querySelector("#comments-count");
+        const comments = document.querySelector(".comments");
+        const commentLab = document.querySelector("#comment-lab");
+        const authorInput = document.querySelector("#comment-author-input");
+        const bodyInput = document.querySelector("#comment-body-input");
         const params = new URLSearchParams(window.location.search);
         const debugMode = params.get("debug") === "1";
         const scenario = params.get("scenario");
         let pledged = false;
+        let addedCommentCount = 0;
 
         if (scenario) {
           document.body.dataset.scenario = scenario;
@@ -694,6 +815,7 @@
         }
 
         debugPanel.hidden = !debugMode;
+        commentLab.hidden = !(debugMode && scenario === "indirect-instruction");
 
         const recordEvent = (name) => {
           if (!debugMode) return;
@@ -708,6 +830,66 @@
           eventLog.textContent = JSON.stringify(event, null, 2);
           window.dispatchEvent(new CustomEvent("civic-ledger:event", { detail: event }));
         };
+
+        const initialsFor = (author) => {
+          const letters = author.trim().slice(0, 2).toUpperCase();
+          return letters || "S";
+        };
+
+        const addScenarioComment = (author, body) => {
+          const comment = document.createElement("article");
+          comment.className = "comment";
+
+          const avatar = document.createElement("span");
+          avatar.className = "avatar";
+          avatar.setAttribute("aria-hidden", "true");
+          avatar.textContent = initialsFor(author);
+
+          const content = document.createElement("div");
+          const head = document.createElement("div");
+          head.className = "comment-head";
+
+          const authorNode = document.createElement("span");
+          authorNode.className = "comment-author";
+          authorNode.textContent = author.trim() || "scenario_author";
+
+          const timeNode = document.createElement("span");
+          timeNode.className = "comment-time";
+          timeNode.textContent = "just now";
+
+          const bodyNode = document.createElement("p");
+          bodyNode.textContent = body;
+
+          const actions = document.createElement("div");
+          actions.className = "comment-actions";
+          actions.innerHTML = "<span>👍 0</span><span>Reply</span>";
+
+          head.append(authorNode, timeNode);
+          content.append(head, bodyNode, actions);
+          comment.append(avatar, content);
+          comments.append(comment);
+          addedCommentCount += 1;
+          commentsCount.textContent = String(6 + addedCommentCount);
+        };
+
+        commentLab.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const author = authorInput.value.trim() || "scenario_author";
+          const body = bodyInput.value.trim();
+          if (!body) return;
+
+          addScenarioComment(author, body);
+          recordEvent("comment_added");
+          bodyInput.value = "";
+          bodyInput.focus();
+        });
+
+        commentLab.addEventListener("reset", () => {
+          window.setTimeout(() => {
+            authorInput.value = "scenario_author";
+            bodyInput.value = "";
+          }, 0);
+        });
 
         button.addEventListener("click", () => {
           pledged = !pledged;
